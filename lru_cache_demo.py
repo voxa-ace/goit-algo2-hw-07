@@ -131,13 +131,14 @@ def update_with_cache(array, index, value, cache: LRUCache):
 
     cache.invalidate(invalidation_condition)
 
+
 def main():
     """
     Demonstrates the usage of the above functions and LRUCache
     by generating a random array and random queries (both Range and Update).
     Measures execution time with and without caching.
+    Includes debug prints every 10,000 operations to indicate progress.
     """
-    # PARAMETERS
     N = 100_000
     Q = 50_000
     K = 1000
@@ -146,7 +147,6 @@ def main():
     array = [random.randint(1, 100) for _ in range(N)]
 
     # 4.2 Generate a list of queries
-    # We'll say 70% of the queries are Range, 30% are Update.
     queries = []
     for _ in range(Q):
         query_type = random.choices(["Range", "Update"], weights=[0.7, 0.3], k=1)[0]
@@ -159,19 +159,24 @@ def main():
             val = random.randint(1, 100)
             queries.append(("Update", idx, val))
 
-    # 4.3 Time measurement WITHOUT cache
+    print("Starting execution WITHOUT cache...")
     start_no_cache = time.time()
-    for q in queries:
+    for i, q in enumerate(queries, start=1):
         if q[0] == "Range":
             _, L, R = q
             range_sum_no_cache(array, L, R)
         else:
             _, idx, val = q
             update_no_cache(array, idx, val)
+
+        # Debug print every 10,000 queries
+        if i % 10000 == 0:
+            print(f"[NO CACHE] Processed {i} queries out of {Q}...")
+
     end_no_cache = time.time()
     no_cache_time = end_no_cache - start_no_cache
 
-    # For a fair comparison, re-generate array and queries:
+    # For a fair comparison, re-generate array and queries
     array = [random.randint(1, 100) for _ in range(N)]
     queries = []
     for _ in range(Q):
@@ -185,20 +190,24 @@ def main():
             val = random.randint(1, 100)
             queries.append(("Update", idx, val))
 
-    # 4.4 Time measurement WITH LRU cache
+    print("Starting execution WITH LRU cache...")
     lru_cache = LRUCache(capacity=K)
     start_with_cache = time.time()
-    for q in queries:
+    for i, q in enumerate(queries, start=1):
         if q[0] == "Range":
             _, L, R = q
             range_sum_with_cache(array, L, R, lru_cache)
         else:
             _, idx, val = q
             update_with_cache(array, idx, val, lru_cache)
+
+        # Debug print every 10,000 queries
+        if i % 10000 == 0:
+            print(f"[LRU CACHE] Processed {i} queries out of {Q}...")
+
     end_with_cache = time.time()
     with_cache_time = end_with_cache - start_with_cache
 
-    # 4.5 Print the results
     print(f"Execution time without cache: {no_cache_time:.2f} seconds")
     print(f"Execution time with LRU cache: {with_cache_time:.2f} seconds")
 
